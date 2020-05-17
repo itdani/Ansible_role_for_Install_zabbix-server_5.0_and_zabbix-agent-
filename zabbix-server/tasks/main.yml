@@ -18,7 +18,7 @@
       - zabbix-nginx-conf
       - zabbix-agent
       - postgresql
-
+# Will be replaced with a module Database modules postgresql
   - name: Create user zabbix for postgesql.
     shell:
       cmd: sudo -u postgres createuser zabbix && sudo -u postgres createdb -O zabbix zabbix && zcat /usr/share/doc/zabbix-server-pgsql*/create.sql.gz | sudo -u zabbix psql zabbix
