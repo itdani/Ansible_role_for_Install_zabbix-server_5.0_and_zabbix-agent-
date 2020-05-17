@@ -1,0 +1,2 @@
+Зайти в командный интерпретатор psql и задать пароль для пользователя zabbix командой:
+alter user zabbix with encrypted password 'zabbix';

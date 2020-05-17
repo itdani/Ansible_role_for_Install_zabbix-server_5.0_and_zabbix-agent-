@@ -1,0 +1,4 @@
+---
+# defaults file for zabbix-agent
+ ip_zabbix_server: 35.225.221.190
+ hostname: agent_1

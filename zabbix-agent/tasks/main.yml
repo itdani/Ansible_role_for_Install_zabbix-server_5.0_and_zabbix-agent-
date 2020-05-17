@@ -1,0 +1,35 @@
+---
+# tasks file for zabbix-agent
+  - name: This command will change the working directory to /home/ubuntu/ and download zabbix-agent
+    shell:
+      cmd: wget https://repo.zabbix.com/zabbix/4.2/ubuntu/pool/main/z/zabbix-release/zabbix-release_4.2-1+bionic_all.deb && dpkg -i zabbix-release_4.2-1+bionic_all.deb
+      chdir: /home/ubuntu
+
+  - name: Run the equivalent of "apt update" as a separate step
+    apt:
+      update_cache: yes
+
+  - name: install zabbix-agent
+    apt:
+      pkg:
+      - zabbix-agent
+
+  - name: Replace a 127.0.0.1 entry with our own
+    lineinfile:
+      path: /etc/zabbix/zabbix_agentd.conf
+      regexp: 'Server=127.0.0.1'
+      line: Server={{ ip_zabbix_server }}
+
+  - name: Replace a 127.0.0.1 entry with our own
+    lineinfile:
+      path: /etc/zabbix/zabbix_agentd.conf
+      regexp: 'ServerActive=127.0.0.1'
+      line: ServerActive={{ ip_zabbix_server }}
+
+  - name: Replace a hostname entry with our own
+    lineinfile:
+      path: /etc/zabbix/zabbix_agentd.conf
+      regexp: 'Hostname=Zabbix server'
+      line: Hostname={{ hostname }}
+    notify:
+       - zabbix-agent restarted

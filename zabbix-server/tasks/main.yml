@@ -1,0 +1,70 @@
+---
+# tasks file for zabbix-server
+  - name: This command will change the working directory to /home/ubuntu/ and download repo zabbix.
+    shell:
+      cmd: wget https://repo.zabbix.com/zabbix/5.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.0-1+bionic_all.deb && dpkg -i zabbix-release_5.0-1+bionic_all.deb
+      chdir: /home/ubuntu
+
+  - name: Run the equivalent of "apt update" as a separate step
+    apt:
+      update_cache: yes
+
+  - name: install packages
+    apt:
+      pkg:
+      - zabbix-server-pgsql
+      - zabbix-frontend-php
+      - php7.2-pgsql
+      - zabbix-nginx-conf
+      - zabbix-agent
+      - postgresql
+
+  - name: Create user zabbix for postgesql.
+    shell:
+      cmd: sudo -u postgres createuser zabbix && sudo -u postgres createdb -O zabbix zabbix && zcat /usr/share/doc/zabbix-server-pgsql*/create.sql.gz | sudo -u zabbix psql zabbix
+
+  - name: Add a line to a file if the file does not exist, without passing regexp
+    lineinfile:
+      path: /etc/zabbix/zabbix_server.conf
+      line: DBPassword=zabbix
+      create: yes
+
+  - name: Ensure the timezone is Moscow
+    lineinfile:
+      path: /etc/zabbix/php-fpm.conf
+      regexp: 'php_value[date.timezone] = Europe/Moscow'
+      insertafter: '; php_value[date.timezone] = Europe/Riga'
+      line: php_value[date.timezone] = Europe/Moscow
+
+  - name: Ensure the server name is ip address zabbix-server
+    lineinfile:
+      path: /etc/zabbix/nginx.conf
+      regexp: '        server_name    35.225.221.190;'
+      insertafter: '#        server_name     example.com;'
+      line:          server_name     35.225.221.190;
+
+  - name: Ensure the default nginx port is 80
+    lineinfile:
+      path: /etc/zabbix/nginx.conf
+      regexp: '        listen          80;'
+      insertafter: '#        listen          80;'
+      line:          listen          80;
+
+    notify:
+       - zabbix-server restarted
+       - zabbix-agent restarted
+       - nginx restarted
+       - php7.2-fpm restarted
+
+
+  - name: Remove useless packages from the cache
+    apt:
+      autoclean: yes
+
+  - name: Remove dependencies that are no longer required
+    apt:
+      autoremove: yes
+
+  - name: Enable app.
+    shell:
+      cmd: systemctl enable zabbix-server zabbix-agent nginx php7.2-fpm

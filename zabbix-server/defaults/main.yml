@@ -1,0 +1,3 @@
+---
+# defaults file for zabbix-server
+ ip_zabbix-server: 35.225.221.190
